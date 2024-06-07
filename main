@@ -1,18 +1,18 @@
 """
 This script fetches the anime list of a user from MyAnimeList
-and creates an Excel file with the anime titles, the user's rating and the MAL score.
+and creates an Excel file
+Rows: Rated anime in the user's list
+Columns: Title, User Rating, MAL Score
 """
 import os
 import requests
-import time
 from dotenv import load_dotenv
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
 from anime_data_model import UserAnime
-from util import try_with_exponential_backoff
-
+from util import try_with_exponential_backoff as try_with_backoff
 
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -27,11 +27,14 @@ def get_user_anime(name, offset=0) -> list[tuple[int, int]]:
     name: The username of the user
     offset: The offset to fetch the anime from
 
-    RETURNS: A list of tuples containing the anime id and the score given by the user
+    RETURNS: A list of rated anime by the user in the format
+        (anime id, score given by user)
     """
-    url = f'https://api.myanimelist.net/v2/users/{name}/animelist?fields=list_status&limit=100&offset={offset}'
+    url = (
+        f'https://api.myanimelist.net/v2/users/{name}/animelist'
+        f'?fields=list_status&limit=100&offset={offset}'
+    )
 
-    # put into try catch block
     try:
         response = requests.get(url, headers={'X-MAL-CLIENT-ID': CLIENT_ID})
         response.raise_for_status()
@@ -46,7 +49,8 @@ def get_user_anime(name, offset=0) -> list[tuple[int, int]]:
         return anime_list
 
     except requests.exceptions.HTTPError as e:
-        raise SystemExit(e)
+        raise e
+
 
 def get_all_user_anime(name) -> list[tuple[int, int]]:
     """
@@ -60,12 +64,13 @@ def get_all_user_anime(name) -> list[tuple[int, int]]:
     offset = 0
     anime_list = []
     while 1:
-        new_anime = get_user_anime(name, offset)
-        if not new_anime:
+        new_animes = try_with_backoff(get_user_anime, name, offset)
+        if not new_animes:
             break
-        anime_list.extend(new_anime)
+        anime_list.extend(new_animes)
         offset += 100
     return anime_list
+
 
 def fetch_anime_data(anime_id, field: str) -> dict:
     """
@@ -87,6 +92,7 @@ def fetch_anime_data(anime_id, field: str) -> dict:
     except requests.exceptions.HTTPError as e:
         raise e
 
+
 def create_anime(anime: tuple[int, int]) -> UserAnime:
     """
     Creates an anime object from the data fetched from MyAnimeList
@@ -97,10 +103,11 @@ def create_anime(anime: tuple[int, int]) -> UserAnime:
     RETURNS: A UserAnime object
     """
     anime_id, user_score = anime
-    anime_data = try_with_exponential_backoff(fetch_anime_data, anime_id, FIELDS)
+    anime_data = try_with_backoff(fetch_anime_data, anime_id, FIELDS)
 
     anime = UserAnime(anime_data, user_score)
     return anime
+
 
 def create_sheet(workbook, anime_list) -> None:
     """
@@ -133,11 +140,15 @@ def create_sheet(workbook, anime_list) -> None:
 
         sheet.cell(j+2, TITLE).hyperlink = anime.get_mal_link()
 
-        sheet.cell(j+2, USER_RATING).alignment = Alignment(horizontal='center')
-        sheet.cell(j+2, MAL_SCORE).alignment = Alignment(horizontal='center')
+        sheet.cell(j + 2, USER_RATING).alignment = Alignment(
+            horizontal='center'
+        )
+        sheet.cell(j + 2, MAL_SCORE).alignment = Alignment(
+            horizontal='center'
+        )
 
 def main() -> None:
-    user = "" # Add the MAL username of the user here
+    user = ""  # Add the MAL username of the user here
 
     user_animes = get_all_user_anime(user)
     anime_list = [print(f"Progress: {i + 1}/{len(user_animes)}") or
@@ -146,6 +157,7 @@ def main() -> None:
     workbook = Workbook()
     create_sheet(workbook, anime_list)
     workbook.save(f"data/{user}_anime_list.xlsx")
+
 
 if __name__ == "__main__":
     main()
