@@ -1,0 +1,5 @@
+.env
+__pycache__
+data/*
+!data/example_data/
+!data/example_data/**
