@@ -2,6 +2,7 @@
 Anime object classes
 """
 
+
 class Anime:
     def __init__(self, anime_data) -> None:
         """
@@ -16,6 +17,9 @@ class Anime:
         self.rating = anime_data['mean']
 
     def get_mal_link(self) -> str:
+        """
+        Returns the link to the anime's page on MyAnimeList
+        """
         return f"https://myanimelist.net/anime/{self.id}"
 
     def __repr__(self) -> str:

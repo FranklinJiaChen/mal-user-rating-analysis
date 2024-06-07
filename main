@@ -24,11 +24,15 @@ def get_user_anime(name, offset=0) -> list[tuple[int, int]]:
     Fetches up to 100 anime from the list of a user from MyAnimeList
 
     PARAMETERS:
-    name: The username of the user
-    offset: The offset to fetch the anime from
+        name: The username of the user
+        offset: The offset to fetch the anime from
 
-    RETURNS: A list of rated anime by the user in the format
+    RETURNS:
+        A list of rated anime by the user in the format
         (anime id, score given by user)
+
+    RAISES:
+        HTTPError: If the request to the API fails
     """
     url = (
         f'https://api.myanimelist.net/v2/users/{name}/animelist'
@@ -52,14 +56,17 @@ def get_user_anime(name, offset=0) -> list[tuple[int, int]]:
         raise e
 
 
-def get_all_user_anime(name) -> list[tuple[int, int]]:
+def get_all_user_anime(name: str) -> list[tuple[int, int]]:
     """
-    Fetches all anime from the list of a user from MyAnimeList
+    Retrieves a list of rated anime by the user.
 
     PARAMETERS:
-    name: The username of the user
+        name: The username of the user.
+        offset: The offset to fetch the anime from.
 
-    RETURNS: A list of tuples containing the (anime_id, user_rating)
+    RETURNS:
+        A list of rated anime by the user in the format
+        (anime id, score given by user)
     """
     offset = 0
     anime_list = []
@@ -77,10 +84,14 @@ def fetch_anime_data(anime_id, field: str) -> dict:
     Fetches data for a specific anime from MyAnimeList
 
     PARAMETERS:
-    anime_id: The id of the anime
-    field: The fields to fetch
+        anime_id: The id of the anime
+        field: The fields to fetch
 
-    RETURNS: A dictionary containing the anime data in json format
+    RETURNS:
+        A dictionary containing the anime data in json format
+
+    RAISES:
+        HTTPError: If the request to the API fails
     """
     url = f'https://api.myanimelist.net/v2/anime/{anime_id}?fields={field}'
     try:
@@ -98,9 +109,10 @@ def create_anime(anime: tuple[int, int]) -> UserAnime:
     Creates an anime object from the data fetched from MyAnimeList
 
     PARAMETERS:
-    anime: A tuple containing the anime id and the score given by the user
+        anime: A tuple containing the anime id and the score given by the user
 
-    RETURNS: A UserAnime object
+    RETURNS:
+        A UserAnime object of the anime
     """
     anime_id, user_score = anime
     anime_data = try_with_backoff(fetch_anime_data, anime_id, FIELDS)
@@ -114,10 +126,8 @@ def create_sheet(workbook, anime_list) -> None:
     Creates an Excel sheet with the anime data
 
     PARAMETERS:
-    workbook: The workbook to create the sheet in
-    anime_list: A list of UserAnime objects
-
-    RETURNS: None
+        workbook: The workbook to create the sheet in
+        anime_list: A list of UserAnime objects
     """
     TITLE = 1
     USER_RATING = 2
@@ -148,6 +158,9 @@ def create_sheet(workbook, anime_list) -> None:
         )
 
 def main() -> None:
+    """
+    Main function to fetch the anime list of a user and create an Excel file
+    """
     user = ""  # Add the MAL username of the user here
 
     user_animes = get_all_user_anime(user)

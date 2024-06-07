@@ -1,12 +1,23 @@
 """
 This file contains general purpose functions.
 """
-
 import time
 
-def try_with_exponential_backoff(func, *args, **kwargs):
+
+def try_withexponential_backoff(func: callable, *args, **kwargs) -> any:
     """
     Tries ten times to execute a function with exponential backoff
+
+    PARAMETERS:
+        func: function to execute
+        args: arguments for the function
+        kwargs: keyword arguments for the function
+
+    RETURNS:
+        result of the function
+
+    RAISES:
+        Exception: if the function fails to execute after 10 tries
     """
     tries = 0
     while tries < 10:
