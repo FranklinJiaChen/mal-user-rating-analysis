@@ -4,7 +4,7 @@ This file contains general purpose functions.
 import time
 
 
-def try_withexponential_backoff(func: callable, *args, **kwargs) -> any:
+def try_with_exponential_backoff(func: callable, *args, **kwargs) -> any:
     """
     Tries ten times to execute a function with exponential backoff
 
