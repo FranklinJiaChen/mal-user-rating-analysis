@@ -1,6 +1,6 @@
 # Data Analysis
-The idea was one can use the (pearson) correlation coefficient on user rating
-and the MyAnimeList (MAL)'s average rating to determine
+The idea was one can use the (pearson) correlation coefficient
+on a user's rating and the MyAnimeList (MAL)'s average rating to determine
 how much ones opinion deviate or allign with the averaged consensus.
 
 ## Methodology:
