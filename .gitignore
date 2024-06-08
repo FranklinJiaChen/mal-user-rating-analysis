@@ -3,3 +3,4 @@ __pycache__
 data/*
 !data/example_data/
 !data/example_data/**
+!data/readme.md

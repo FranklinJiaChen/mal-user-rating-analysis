@@ -133,7 +133,10 @@ def create_sheet(workbook, anime_list) -> None:
     USER_RATING = 2
     MAL_SCORE = 3
 
-    headers = ["Title", "User Rating", "MAL Score"]
+    N = 5
+    CORRELATION = 6
+
+    headers = ["Title", "User Rating", "MAL Score", "", "n", "Correlation"]
     sheet = workbook.active
     sheet.title = "Anime List"
 
@@ -156,6 +159,9 @@ def create_sheet(workbook, anime_list) -> None:
         sheet.cell(j + 2, MAL_SCORE).alignment = Alignment(
             horizontal='center'
         )
+
+    sheet.cell(2, N).value = len(anime_list)
+    sheet.cell(2, CORRELATION).value = f'=correl(B:B, C:C)'
 
 def main() -> None:
     """
