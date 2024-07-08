@@ -170,8 +170,11 @@ def main() -> None:
     user = ""  # Add the MAL username of the user here
 
     user_animes = get_all_user_anime(user)
-    anime_list = [print(f"Progress: {i + 1}/{len(user_animes)}") or
-                  create_anime(anime) for i, anime in enumerate(user_animes)]
+
+    anime_list = []
+    for i, anime in enumerate(user_animes):
+        print(f"Progress: {i + 1}/{len(user_animes)}")
+        anime_list.append(create_anime(anime))
 
     workbook = Workbook()
     create_sheet(workbook, anime_list)
